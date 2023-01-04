@@ -1,2 +1,2 @@
-# MultiTune
-# BINP programm based on ICA, PCA and some else
+# CMP
+# BINP programm for measuring of current.
