@@ -20,12 +20,12 @@ class SettingsControl(QObject):
 
     def save_settings(self):
         """   """
-        QCoreApplication.setApplicationName("TDP")
+        QCoreApplication.setApplicationName("BTMS")
         for obj in self.obj_list:
             obj.save_settings()
 
     def read_settings(self):
         """   """
-        QCoreApplication.setApplicationName("TDP")
+        QCoreApplication.setApplicationName("BTMS")
         for obj in self.obj_list:
             obj.read_settings()

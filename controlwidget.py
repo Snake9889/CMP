@@ -10,7 +10,6 @@ import os.path
 class ControlWidget(QWidget):
     """   """
     window_changed_str = pyqtSignal(str)
-    vector_changed_int = pyqtSignal(int)
     method_changed_str = pyqtSignal(str)
     boards_changed = pyqtSignal(object)
     scale_changed_obj = pyqtSignal(object)
@@ -22,15 +21,12 @@ class ControlWidget(QWidget):
         super(ControlWidget, self).__init__(parent)
 
         ui_path = os.path.dirname(os.path.abspath(__file__))
-        self.ui = uic.loadUi(os.path.join(ui_path, 'ControlWidget_new.ui'), self)
+        self.ui = uic.loadUi(os.path.join(ui_path, 'ControlWidget.ui'), self)
 
         argument_parser = TerminalParser()
 
         self.window = "None"
-        self.decomp_method = "PCA"
         self.method = argument_parser.method_name_parsed
-        #self.v1 = argument_parser.v1_parsed
-
         self.bpm = argument_parser.bpm_name_parsed
         self.boards = None
         self.lboard = 0.01
@@ -59,7 +55,6 @@ class ControlWidget(QWidget):
         self.buttonGroup.buttonClicked['int'].connect(self.on_method_checked)
         self.lboardSBox.valueChanged.connect(self.on_lboardsbox_changed)
         self.rboardSBox.valueChanged.connect(self.on_rboardsbox_changed)
-        self.singularSBox.valueChanged.connect(self.on_sing_vect_changed)
         self.log_mod.stateChanged.connect(self.on_plot_checked)
 
     def on_window_checked(self, state):
@@ -74,11 +69,6 @@ class ControlWidget(QWidget):
             self.window = "None"
 
         self.window_changed_str.emit(self.window)
-
-    def on_sing_vect_changed(self, value):
-        """   """
-        print(value)
-        self.vector_changed_int.emit(value)
 
     def on_method_checked(self, state):
         """   """
@@ -159,7 +149,7 @@ class ControlWidget(QWidget):
         """   """
         settings = QSettings()
 
-        if self.str_id == "Data_1":
+        if self.str_id == "Data_X":
             settings.beginGroup(self.bpm)
             settings.beginGroup(self.str_id)
             self.window = settings.value("window", "None")
@@ -168,9 +158,8 @@ class ControlWidget(QWidget):
             self.rboard = settings.value("rboard", 0.25, type=float)
             self.scale = settings.value("scale", "Normal")
             settings.endGroup()
-            settings.endGroup()
 
-        elif self.str_id == "Data_2":
+        elif self.str_id == "Data_Z":
             settings.beginGroup(self.bpm)
             settings.beginGroup(self.str_id)
             self.window = settings.value("window", "Hann")
@@ -178,7 +167,6 @@ class ControlWidget(QWidget):
             self.lboard = settings.value("lboard", 0.10, type=float)
             self.rboard = settings.value("rboard", 0.30, type=float)
             self.scale = settings.value("scale", "Normal")
-            settings.endGroup()
             settings.endGroup()
 
         else:

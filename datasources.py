@@ -1,6 +1,7 @@
 
 from PyQt5.QtCore import pyqtSignal, QObject, QTimer, QSettings
 import numpy as np
+import random
 from BPM_template import BPMTemplate
 from statuswidget import StatusWidget
 
@@ -13,7 +14,7 @@ class BPMData(BPMTemplate):
 
         self.statusWidget = StatusWidget()
 
-        self.data_len = 1024
+        self.data_len = 8000
 
         self.mu, self.sigma = 0, 1
         self.a0 = 1
@@ -24,13 +25,9 @@ class BPMData(BPMTemplate):
         self.w2 = 0.02
         self.k = 0.0000005
 
-        # self.phase1 = 0.00101
-        # self.phase2 = 0.00425
-        # self.phase3 = 0.0085
-        # self.phase4 = 0.01275
-        self.phase = np.array([0.00101, 0.00425, 0.0085, 0.01275])
-        self.n_amp = np.array([0.1, 0.05, 0.09, 0.11])
-        self.bn_amp = np.array([0.25, 0.3, 0.2, 0.1])
+        self.phase = 0.00101
+        self.n_amp = 0.1
+        self.bn_amp = 0.25
 
         self.dataX = None
         self.dataZ = None
@@ -49,28 +46,8 @@ class BPMData(BPMTemplate):
     def on_timer_update(self):
         """   """
 
-        dataX1, dataZ1, dataI1 = self.generate_bpm_data(self.phase[0], self.dataT, self.n_amp[0], self.bn_amp[0])
-        dataX2, dataZ2, dataI2 = self.generate_bpm_data(self.phase[1], self.dataT, self.n_amp[1], self.bn_amp[1])
-        dataX3, dataZ3, dataI3 = self.generate_bpm_data(self.phase[2], self.dataT, self.n_amp[2], self.bn_amp[2])
-        dataX4, dataZ4, dataI4 = self.generate_bpm_data(self.phase[3], self.dataT, self.n_amp[3], self.bn_amp[3])
-
-        self.dataX = self.reshaping_arrays(dataX1, dataX2, dataX3, dataX4)
-        self.dataZ = self.reshaping_arrays(dataZ1, dataZ2, dataZ3, dataZ4)
-        self.dataI = self.reshaping_arrays(dataI1, dataI2, dataI3, dataI4)
+        self.dataX, self.dataZ, self.dataI = self.generate_bpm_data(self.phase, self.dataT, self.n_amp, self.bn_amp)
         self.data_ready.emit(self)
-
-    def get_status_widget(self):
-        """   """
-        return self.statusWidget
-
-    def reshaping_arrays(self, M1, M2, M3, M4):
-        """   """
-        newMass = np.zeros((self.data_len, 4))
-        newMass[:,0] = M1
-        newMass[:,1] = M2
-        newMass[:,2] = M3
-        newMass[:,3] = M4
-        return(newMass)
 
     def generate_bpm_data(self, phase, dataT, namp, bnamp):
         """   """
@@ -87,10 +64,8 @@ class BPMData(BPMTemplate):
                 3* self.harmonic_oscillations(phase, dataT, self.a2, self.w2, namp)) + \
                 [x for x in bnamp*(np.random.normal(self.mu, self.sigma, self.data_len))]
 
-        dataI = np.ones(self.data_len)
+        dataI = self.current_generator(self.data_len)
 
-        #dataX = dataX + 0.3 * np.random.normal(size=self.data_len)  # 30% noise
-        #dataZ = dataZ + 0.4 * np.random.normal(size=self.data_len)  # 10% noise
         return(dataX, dataZ, dataI)
 
     def harmonic_oscillations(self, phase, dataT, amp1, freq, amp2):
@@ -98,6 +73,17 @@ class BPMData(BPMTemplate):
         osc = (amp1 + amp2*(np.random.normal(self.mu, self.sigma, self.data_len)))*np.sin(2 * np.pi * freq * dataT + 2 * np.pi * phase)
 
         return(osc)
+
+    def current_generator(self, num):
+        """   """
+        I = np.zeros(num)
+        point = random.randint(0, num)
+        for i in range(num):
+            if i < point:
+                I[i] = 0.5 - 0.1*random.random()
+            else:
+                I[i] = 5 + 0.5 - 0.1*random.random()
+        return(I)
 
     def force_data_ready(self, signature):
         """   """

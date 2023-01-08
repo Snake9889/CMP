@@ -6,89 +6,51 @@ from PyQt5.QtCore import pyqtSignal, QRectF, Qt, QSettings, QSize, QPoint
 from PyQt5 import uic
 import pyqtgraph as pg
 from helpwidget import HelpWidget
-#from phasewidget import PhaseWidget
 from statuswidget import StatusWidget
 
 
 class MainWindow(QMainWindow):
     """   """
-    decomp_changed_str = pyqtSignal(str)
-    filter_changed_str = pyqtSignal(str)
     region_changed = pyqtSignal(object)
-    filter_changed_str = pyqtSignal(str)
 
-    def __init__(self, data_source, data_proc_1, data_proc_2, settings_control, bpm_name):
+    def __init__(self, data_source, data_proc_X, data_proc_Z, settings_control, bpm_name):
         super(MainWindow, self).__init__()
 
         ui_path = os.path.dirname(os.path.abspath(__file__))
-        self.ui = uic.loadUi(os.path.join(ui_path, 'MainWindow_new.ui'), self)
+        self.ui = uic.loadUi(os.path.join(ui_path, 'MainWindow.ui'), self)
 
         self.window_str = "None"
-        self.filter_state = "None"
         self.bpm = bpm_name
 
-        # if self.bpm == "all":
-            # """ Replace one widget with another """
-        old_statusWidget = self.statusWidget
-        new_statusWidget = data_source.get_status_widget()
-        new_statusWidget.setParent(self.centralwidget)
-
-        self.ui.verticalLayout.replaceWidget(old_statusWidget, new_statusWidget)
-        old_statusWidget.deleteLater()
-        self.statusWidget = new_statusWidget
-
-        # else:
-            # """ Creating phase button """
-            # old_Widget = self.statusWidget
-            # self.phasebtn = QPushButton('Phase', self)
-            # self.phasebtn.setCheckable(True)
-            # self.phasebtn.setStyleSheet("QPushButton:checked {color: black; background-color: green;}")
-
-            # self.phase_widget = PhaseWidget(os.path.join(ui_path))
-            # self.phasebtn.clicked.connect(self.phase_widget.show)
-
-            # self.ui.verticalLayout.replaceWidget(old_Widget, self.phasebtn)
-            # old_Widget.deleteLater()
-
         self.images_list = []
-        self.r1_rect = None
-        self.r2_rect = None
-        self.r3_rect = None
-        self.r4_rect = None
-        self.sng1_rect = None
-        self.sng2_rect = None
+        self.x_rect = None
+        self.fx_rect = None
+        self.z_rect = None
+        self.fz_rect = None
 
         self.data_source = data_source
-        self.data_proc_1 = data_proc_1
-        self.data_proc_2 = data_proc_2
+        self.data_proc_X = data_proc_X
+        self.data_proc_Z = data_proc_Z
         self.settingsControl = settings_control
 
-        self.data_proc_1.data_processed.connect(self.on_data_sng_1_ready)
-        self.data_proc_2.data_processed.connect(self.on_data_sng_2_ready)
+        self.data_proc_X.data_processed.connect(self.on_data_FX_ready)
+        self.data_proc_Z.data_processed.connect(self.on_data_FZ_ready)
 
-        self.controlWidget1.window_changed_str.connect(self.data_proc_1.on_wind_changed)
-        self.controlWidget1.groupBox.setTitle("1 Controller")
-        self.controlWidget1.set_str_id("Data_1")
-        self.controlWidget1.scale_changed_obj.connect(self.on_scale_changing)
+        self.controlWidgetX.window_changed_str.connect(self.data_proc_X.on_wind_changed)
+        self.controlWidgetX.groupBox.setTitle("X Controller")
+        self.controlWidgetX.set_str_id("Data_X")
+        self.controlWidgetX.scale_changed_obj.connect(self.on_scale_changing)
 
-        self.controlWidget2.window_changed_str.connect(self.data_proc_2.on_wind_changed)
-        self.controlWidget2.groupBox.setTitle("2 Controller")
-        self.controlWidget2.set_str_id("Data_2")
-        self.controlWidget2.scale_changed_obj.connect(self.on_scale_changing)
+        self.controlWidgetZ.window_changed_str.connect(self.data_proc_Z.on_wind_changed)
+        self.controlWidgetZ.groupBox.setTitle("Z Controller")
+        self.controlWidgetZ.set_str_id("Data_Z")
+        self.controlWidgetZ.scale_changed_obj.connect(self.on_scale_changing)
 
-        self.controlWidget1.method_changed_str.connect(self.data_proc_1.on_method_changed)
-        self.controlWidget1.boards_changed.connect(self.data_proc_1.on_boards_changed)
-        self.controlWidget1.vector_changed_int.connect(self.data_proc_1.on_vector_changed)
+        self.controlWidgetX.method_changed_str.connect(self.data_proc_X.on_method_changed)
+        self.controlWidgetX.boards_changed.connect(self.data_proc_X.on_boards_changed)
 
-        self.controlWidget2.method_changed_str.connect(self.data_proc_2.on_method_changed)
-        self.controlWidget2.boards_changed.connect(self.data_proc_2.on_boards_changed)
-        self.controlWidget2.vector_changed_int.connect(self.data_proc_2.on_vector_changed)
-
-        self.decompBox.currentIndexChanged.connect(self.on_decomp_changed)
-        self.filterBox.stateChanged.connect(self.on_filter_checked)
-
-        #self.phase_widget = PhaseWidget(os.path.join(ui_path))
-        #self.phasebtn.clicked.connect(self.phase_widget.show)
+        self.controlWidgetZ.method_changed_str.connect(self.data_proc_Z.on_method_changed)
+        self.controlWidgetZ.boards_changed.connect(self.data_proc_Z.on_boards_changed)
 
         self.actionSave.triggered.connect(self.on_save_button)
         self.actionRead.triggered.connect(self.on_read_button)
@@ -99,27 +61,23 @@ class MainWindow(QMainWindow):
         self.help_widget = HelpWidget(os.path.join(ui_path, 'etc/icons/Help_1.png'))
         self.actionHelp.triggered.connect(self.help_widget.show)
 
-        self.controlWidget1.boards_changed.connect(self.boards_1_changed)
-        self.controlWidget2.boards_changed.connect(self.boards_2_changed)
+        self.controlWidgetX.boards_changed.connect(self.boards_X_changed)
+        self.controlWidgetZ.boards_changed.connect(self.boards_Z_changed)
 
-        self.ui.nu_x_label.setText('\u03BD<sub>1</sub> = ')
-        self.ui.nu_z_label.setText('\u03BD<sub>2</sub> = ')
+        self.ui.nu_x_label.setText('\u03BD<sub>x</sub> = ')
+        self.ui.nu_z_label.setText('\u03BD<sub>z</sub> = ')
+        self.ui.delta_I_label.setText('\u0394I = ')
 
         self.plots_customization()
 
-        self.data_curve11 = self.ui.plot1.plot(pen='r', title='X_plot')
-        self.data_curve12 = self.ui.plot1.plot(pen='b', title='Z_plot')
-        self.data_curve21 = self.ui.plot2.plot(pen='r', title='X_plot')
-        self.data_curve22 = self.ui.plot2.plot(pen='b', title='Z_plot')
-        self.data_curve31 = self.ui.plot3.plot(pen='r', title='X_plot')
-        self.data_curve32 = self.ui.plot3.plot(pen='b', title='Z_plot')
-        self.data_curve41 = self.ui.plot4.plot(pen='r', title='X_plot')
-        self.data_curve42 = self.ui.plot4.plot(pen='b', title='Z_plot')
+        self.data_curve11 = self.ui.plotSignal.plot(pen='r', title='X_plot')
+        self.data_curve12 = self.ui.plotSignal.plot(pen='b', title='Z_plot')
+        self.data_curve2 = self.ui.plotFX.plot(pen='r', title='Fourier Transform X_plot')
+        self.data_curve3 = self.ui.plotFZ.plot(pen='b', title='Fourier Transform Z_plot')
+        self.data_curve4 = self.ui.plotI.plot(pen='k', title='Current_plot')
+        self.data_curve51 = self.ui.plotPhase.scatterPlot(pen='k', title='X_phase', symbol='o', size=3, brush='r')
+        self.data_curve52 = self.ui.plotPhase.scatterPlot(pen='k', title='Z_phase', symbol='o', size=3, brush='b')
 
-        self.data_curve5 = self.ui.plot_sng1.plot(pen='r', title='Fourier Transform X_plot')
-        self.data_curve6 = self.ui.plot_sng1.plot(pen='b', title='Fourier Transform Z_plot')
-        self.data_curve7 = self.ui.plot_sng2.plot(pen='r', title='Fourier Transform X_plot')
-        self.data_curve8 = self.ui.plot_sng2.plot(pen='b', title='Fourier Transform Z_plot')
 
     @staticmethod
     def customise_label(plot, text_item, html_str):
@@ -130,59 +88,39 @@ class MainWindow(QMainWindow):
 
     def plots_customization(self):
         """   """
-        label_str_1 = "<span style=\"color:red; font-size:16px\">{}</span>"
-        label_str_2 = "<span style=\"color:blue;font-size:16px\">{}</span>"
+        label_str_x = "<span style=\"color:red; font-size:16px\">{}</span>"
+        label_str_z = "<span style=\"color:blue;font-size:16px\">{}</span>"
 
-        plot = self.ui.plot1
+        plot = self.ui.plotSignal
         self.customize_plot(plot)
-        self.customise_label(plot, pg.TextItem(), label_str_1.format("1"))
+        self.customise_label(plot, pg.TextItem(), label_str_x.format("X-Z"))
 
-        plot = self.ui.plot2
+        plot = self.ui.plotI
         self.customize_plot(plot)
-        self.customise_label(plot, pg.TextItem(), label_str_1.format("2"))
+        self.customise_label(plot, pg.TextItem(), label_str_z.format("I"))
 
-        plot = self.ui.plot3
-        plot = self.ui.plot3
+        plot = self.ui.plotFX
         self.customize_plot(plot)
-        self.customise_label(plot, pg.TextItem(), label_str_1.format("3"))
+        self.customise_label(plot, pg.TextItem(), label_str_x.format("Ax"))
 
-        plot = self.ui.plot4
+        self.FX = pg.LinearRegionItem([self.controlWidgetX.lboard, self.controlWidgetX.rboard])
+        self.FX.setBounds([0,0.5])
+        plot.addItem(self.FX)
+        self.FX.sigRegionChangeFinished.connect(self.region_X_changed)
+
+        plot = self.ui.plotFZ
         self.customize_plot(plot)
-        self.customise_label(plot, pg.TextItem(), label_str_1.format("4"))
+        self.customise_label(plot, pg.TextItem(), label_str_z.format("Az"))
 
-        plot = self.ui.plot_sng1
+        self.FZ = pg.LinearRegionItem([self.controlWidgetX.lboard, self.controlWidgetZ.rboard])
+        self.FZ.setBounds([0,0.5])
+        plot.addItem(self.FZ)
+        self.FZ.sigRegionChangeFinished.connect(self.region_Z_changed)
+
+        plot = self.ui.plotPhase
         self.customize_plot(plot)
-        self.customise_label(plot, pg.TextItem(), label_str_2.format("V1"))
-
-        self.sng1 = pg.LinearRegionItem([self.controlWidget1.lboard, self.controlWidget1.rboard])
-        self.sng1.setBounds([0,0.5])
-        plot.addItem(self.sng1)
-        self.sng1.sigRegionChangeFinished.connect(self.region_1_changed)
-
-        plot = self.ui.plot_sng2
-        self.customize_plot(plot)
-        self.customise_label(plot, pg.TextItem(), label_str_2.format("V2"))
-
-        self.sng2 = pg.LinearRegionItem([self.controlWidget2.lboard, self.controlWidget2.rboard])
-        self.sng2.setBounds([0,0.5])
-        plot.addItem(self.sng2)
-        self.sng2.sigRegionChangeFinished.connect(self.region_2_changed)
-
-        """ Here can be the cross-marker on plots """
-        # vLine = pg.InfiniteLine(angle=90, movable=False)
-        # hLine = pg.InfiniteLine(angle=0, movable=False)
-        # p1.addItem(vLine, ignoreBounds=True)
-        # p1.addItem(hLine, ignoreBounds=True)
-        # vb = p1.vb
-
-    # def mouseMoved(evt):
-        # pos = evt[0]  ## using signal proxy turns original arguments into a tuple
-        # if p1.sceneBoundingRect().contains(pos):
-            # mousePoint = vb.mapSceneToView(pos)
-            # index = int(mousePoint.x())
-            # if index > 0 and index < len(data1):
-                # label.setText("<span style='font-size: 12pt'>x=%0.1f,   <span style='color: red'>y1=%0.1f</span>,   <span style='color: green'>y2=%0.1f</span>" % (mousePoint.x(), data1[index], data2[index]))
-            # vLine.setPos(mousePoint.x())
+        self.customise_label(plot, pg.TextItem(), label_str_x.format("Phase"))
+        self.plotPhase.setAspectLocked(True)
 
     @staticmethod
     def customize_plot(plot):
@@ -197,10 +135,10 @@ class MainWindow(QMainWindow):
     def on_scale_changing(self, control_widget):
         """   """
         scale = control_widget.scale
-        if control_widget.str_id == "Data_1":
-            self.plot_mode(self.ui.plot_sng1, scale)
-        elif control_widget.str_id == "Data_2":
-            self.plot_mode(self.ui.plot_sng2, scale)
+        if control_widget.str_id == "Data_X":
+            self.plot_mode(self.ui.plotFX, scale)
+        elif control_widget.str_id == "Data_Z":
+            self.plot_mode(self.ui.plotFZ, scale)
         else:
             print("Error in control_widget!")
 
@@ -212,39 +150,21 @@ class MainWindow(QMainWindow):
         if scale == 'Log_Y':
             plot.setLogMode(False, True)
 
-    def boards_1_changed(self, dict):
+    def boards_X_changed(self, dict):
         """   """
-        self.sng1.setRegion([dict.get("lboard", 0.1), dict.get("rboard", 0.5)])
+        self.FX.setRegion([dict.get("lboard", 0.1), dict.get("rboard", 0.5)])
 
-    def boards_2_changed(self, dict):
+    def boards_Z_changed(self, dict):
         """   """
-        self.sng2.setRegion([dict.get("lboard", 0.1), dict.get("rboard", 0.5)])
+        self.FZ.setRegion([dict.get("lboard", 0.1), dict.get("rboard", 0.5)])
 
-    def region_1_changed(self):
+    def region_X_changed(self):
         """   """
-        self.controlWidget1.on_boards_changed_ext(self.sng1.getRegion())
+        self.controlWidgetX.on_boards_changed_ext(self.FX.getRegion())
 
-    def region_2_changed(self):
+    def region_Z_changed(self):
         """   """
-        self.controlWidget2.on_boards_changed_ext(self.sng2.getRegion())
-
-    def on_decomp_changed(self, state):
-        if state == 0:
-            self.decomp_method = "PCA"
-        elif state == 1:
-            self.decomp_method = "ICA"
-        else:
-            self.decomp_method = "PCA"
-
-        self.decomp_changed_str.emit(self.decomp_method)
-
-    def on_filter_checked(self, state):
-        """   """
-        if state == Qt.Checked:
-            self.filter_state = "Kalman"
-        else:
-            self.filter_state = "None"
-        self.filter_changed_str.emit(self.filter_state)
+        self.controlWidgetZ.on_boards_changed_ext(self.FZ.getRegion())
 
     def on_exit_button(self):
         """   """
@@ -258,85 +178,74 @@ class MainWindow(QMainWindow):
         """   """
         self.settingsControl.save_settings()
 
-    def on_data1_ready(self, data_source):
+    def on_data_ready(self, data_source):
         """   """
-        self.data_curve11.setData(data_source.dataT, data_source.dataX[:,0])
-        self.data_curve12.setData(data_source.dataT, data_source.dataZ[:,0])
-        self.r1_rect = self.ui.plot1.viewRange()
+        self.data_curve11.setData(data_source.dataT, data_source.dataX)
+        self.data_curve12.setData(data_source.dataT, data_source.dataZ)
+        self.signal_rect = self.ui.plotSignal.viewRange()
 
-    def on_data2_ready(self, data_source):
+    def on_current_ready(self, data_source):
         """   """
-        self.data_curve21.setData(data_source.dataT, data_source.dataX[:,1])
-        self.data_curve22.setData(data_source.dataT, data_source.dataZ[:,1])
-        self.r2_rect = self.ui.plot2.viewRange()
+        self.data_curve4.setData(data_source.dataT, data_source.dataI)
+        self.current_rect = self.ui.plotI.viewRange()
 
-    def on_data3_ready(self, data_source):
+    def on_data_FX_ready(self, data_processor):
         """   """
-        self.data_curve31.setData(data_source.dataT, data_source.dataX[:,2])
-        self.data_curve32.setData(data_source.dataT, data_source.dataZ[:,2])
-        self.r3_rect = self.ui.plot3.viewRange()
+        self.data_curve2.setData(data_processor.fftwT, data_processor.fftw_to_process)
+        self.fx_rect = self.ui.plotFX.viewRange()
 
-    def on_data4_ready(self, data_source):
+    def on_data_FZ_ready(self, data_processor):
         """   """
-        self.data_curve41.setData(data_source.dataT, data_source.dataX[:,3])
-        self.data_curve42.setData(data_source.dataT, data_source.dataZ[:,3])
-        self.r4_rect = self.ui.plot4.viewRange()
+        self.data_curve3.setData(data_processor.fftwT, data_processor.fftw_to_process)
+        self.fz_rect = self.ui.plotFZ.viewRange()
 
-    def on_data_sng_1_ready(self, data_processor):
-        """   """
-        self.data_curve5.setData(data_processor.fftwT, data_processor.fftw_to_process_X)
-        self.data_curve6.setData(data_processor.fftwT, data_processor.fftw_to_process_Z)
-        self.sng1_rect = self.ui.plot_sng1.viewRange()
-
-    def on_data_sng_2_ready(self, data_processor):
-        """   """
-        self.data_curve7.setData(self.data_proc_2.fftwT, self.data_proc_2.fftw_to_process_X)
-        self.data_curve8.setData(self.data_proc_2.fftwT, self.data_proc_2.fftw_to_process_Z)
-        self.sng2_rect = self.ui.plot_sng2.viewRange()
-
-    def on_freq_status_1(self, data_processor):
+    def on_freq_status_X(self, data_processor):
         """   """
         if data_processor.warning == 0:
-            self.ui.frq_x1.setText('{:.5f}'.format(data_processor.frq_founded_X))
-            self.ui.frq_z1.setText('{:.5f}'.format(data_processor.frq_founded_Z))
+            self.ui.frq_x.setText('{:.5f}'.format(data_processor.frq_founded))
         elif data_processor.warning == 1:
-            self.ui.frq_x1.setText(data_processor.warningText)
-            self.ui.frq_z1.setText(data_processor.warningText)
+            self.ui.frq_x.setText(data_processor.warningText)
         else:
-            self.ui.frq_x1.setText('Unexpected value!')
-            self.ui.frq_z1.setText('Unexpected value!')
+            self.ui.frq_x.setText('Unexpected value!')
 
-    def on_freq_status_2(self, data_processor):
+    def on_freq_status_Z(self, data_processor):
         """   """
         if data_processor.warning == 0:
-            self.ui.frq_x2.setText('{:.5f}'.format(data_processor.frq_founded_X))
-            self.ui.frq_z2.setText('{:.5f}'.format(data_processor.frq_founded_Z))
+            self.ui.frq_z.setText('{:.5f}'.format(data_processor.frq_founded))
         elif data_processor.warning == 1:
-            self.ui.frq_x2.setText(data_processor.warningText)
-            self.ui.frq_z2.setText(data_processor.warningText)
+            self.ui.frq_z.setText(data_processor.warningText)
         else:
-            self.ui.frq_x2.setText('Unexpected value!')
-            self.ui.frq_z2.setText('Unexpected value!')
+            self.ui.frq_z.setText('Unexpected value!')
+
+    def on_phase_status(self, data_processor):
+        """   """
+        self.data_curve51.setData(data_processor.dataX[0:len(data_processor.momentum)], data_processor.momentum)
+        self.data_curve52.setData(data_processor.dataZ[0:len(data_processor.momentum)], data_processor.momentum)
+        self.phase_rect = self.ui.plotPhase.viewRange()
+
+    def on_current_status(self, data_processor):
+        """   """
+        if data_processor.warning == 0:
+            self.ui.delta_I.setText('{:.5f}'.format(data_processor.delta_I))
+            self.ui.time_I.setText('{:.5f}'.format(data_processor.t_zero))
+        elif data_processor.warning == 1:
+            self.ui.delta_I.setText(data_processor.warningText)
+            self.ui.time_I.setText(data_processor.warningText)
+        else:
+            self.ui.delta_I.setText('Unexpected value!')
+            self.ui.time_I.setText('Unexpected value!')
+
 
     def save_settings(self):
         """   """
-        self.r1_rect = self.ui.plot1.viewRange()
-        self.r2_rect = self.ui.plot2.viewRange()
-        self.r3_rect = self.ui.plot3.viewRange()
-        self.r4_rect = self.ui.plot4.viewRange()
-        self.sng1_rect = self.ui.plot_sng1.viewRange()
-        self.sng2_rect = self.ui.plot_sng2.viewRange()
         settings = QSettings()
         settings.beginGroup(self.bpm)
         settings.beginGroup("Plots")
-        settings.setValue("1_zoom", self.r1_rect)
-        settings.setValue("2_zoom", self.r2_rect)
-        settings.setValue("3_zoom", self.r3_rect)
-        settings.setValue("4_zoom", self.r4_rect)
-        settings.setValue("sng1_zoom", self.sng1_rect)
-        print(self.sng1_rect)
-        settings.setValue("sng2_zoom", self.sng2_rect)
-        print(self.sng2_rect)
+        settings.setValue("signal_zoom", self.signal_rect)
+        settings.setValue("current_zoom", self.current_rect)
+        settings.setValue("fx_zoom", self.fx_rect)
+        settings.setValue("fz_zoom", self.fz_rect)
+        settings.setValue("phase_zoom", self.phase_rect)
         settings.setValue('size', self.size())
         settings.setValue('pos', self.pos())
         settings.endGroup()
@@ -345,29 +254,23 @@ class MainWindow(QMainWindow):
 
     def read_settings(self):
         """   """
-        rect_def = [[0, 0.5], [0, 0.1]]
+        rect_def = [[0, 1], [0, 1]]
+        rect_def_phase = [[-1, 1], [-1, 1]]
         settings = QSettings()
         settings.beginGroup(self.bpm)
         settings.beginGroup("Plots")
-        self.r1_rect = settings.value("1_zoom", rect_def)
-        self.r2_rect = settings.value("2_zoom", rect_def)
-        self.r3_rect = settings.value("3_zoom", rect_def)
-        self.r4_rect = settings.value("4_zoom", rect_def)
-        self.sng1_rect = settings.value("sng1_zoom", rect_def)
-        self.sng2_rect = settings.value("sng2_zoom", rect_def)
+        self.signal_rect = settings.value("signal_zoom", rect_def)
+        self.current_rect = settings.value("current_zoom", rect_def)
+        self.fx_rect = settings.value("fx_zoom", rect_def)
+        self.fz_rect = settings.value("fz_zoom", rect_def)
+        self.phase_rect = settings.value("phase_zoom", rect_def_phase)
         self.resize(settings.value('size', QSize(500, 500)))
         self.move(settings.value('pos', QPoint(60, 60)))
         settings.endGroup()
         settings.endGroup()
 
-        self.ui.plot1.setRange(xRange=self.r1_rect[0], yRange=self.r1_rect[1])
-        self.ui.plot2.setRange(xRange=self.r2_rect[0], yRange=self.r2_rect[1])
-        self.ui.plot3.setRange(xRange=self.r3_rect[0], yRange=self.r3_rect[1])
-        self.ui.plot4.setRange(xRange=self.r4_rect[0], yRange=self.r4_rect[1])
-
-        self.ui.plot_sng1.setRange(xRange=self.sng1_rect[0], yRange=self.sng1_rect[1])
-        print(self.sng1_rect)
-        self.ui.plot_sng2.setRange(xRange=self.sng2_rect[0], yRange=self.sng2_rect[1])
-        print(self.sng2_rect)
-        
+        self.ui.plotSignal.setRange(xRange=self.signal_rect[0], yRange=self.signal_rect[1])
+        self.ui.plotPhase.setRange(xRange=self.phase_rect[0], yRange=self.phase_rect[1])
+        self.ui.plotFX.setRange(xRange=self.fx_rect[0], yRange=self.fx_rect[1])
+        self.ui.plotFZ.setRange(xRange=self.fz_rect[0], yRange=self.fz_rect[1])
 

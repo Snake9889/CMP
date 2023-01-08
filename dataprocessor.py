@@ -10,17 +10,16 @@ class DataProcessor(QObject):
     """   """
     data_processed = pyqtSignal(object)
 
-    def __init__(self, data_vector=1, data_len=1024, parent=None):
+    def __init__(self, data_type='X', data_len=1024, parent=None):
         super(DataProcessor, self).__init__(parent)
 
-        #self.type_to_process = data_type
+        self.type_to_process = data_type
         argument_parser = TerminalParser()
 
         self.windowType = 'None'
         self.data_len = data_len
         self.algType = argument_parser.method_name_parsed
         self.bpm = argument_parser.bpm_name_parsed
-        self.vect_num = int(data_vector)
         self.window = None
 
         self.regen_wind(self.windowType)
@@ -36,17 +35,18 @@ class DataProcessor(QObject):
 
         self.fftwT = None
 
-        self.data_to_process_X = None
-        self.data_to_process_Z = None
-        self.fftw_to_process_X = None
-        self.fftw_to_process_Z = None
+        self.data_to_process = None
+        self.current_to_process = None
+        self.fftw_to_process = None
 
         self.alpha = None
         self.falpha = None
 
-        self.frq_founded_X = 0.0
-        self.frq_founded_Z = 0.0
+        self.frq_founded = 0.0
+        self.t_zero = 0
+        self.delta_I = 0.0
 
+        self.momentum = None
 
         self.warning = 0
         self.warningText = ""
@@ -59,10 +59,6 @@ class DataProcessor(QObject):
     def on_method_changed(self, algType):
         """   """
         self.algType = algType
-
-    def on_vector_changed(self, vector_num):
-        """   """
-        self.vect_num = int(vector_num)
 
     def on_boards_changed(self, boards_dict):
         """   """
@@ -81,42 +77,30 @@ class DataProcessor(QObject):
         if windowType == 'Hamming':
             self.window = np.hamming(self.data_len)
 
-    def on_data_recv(self, data_decompositor):
+    def on_data_recv(self, data_source):
         """   """
-        self.data_len = data_decompositor.data_len
+        self.data_len = data_source.data_len
 
         self.regen_wind(self.windowType)
 
-        self.dataT = data_decompositor.dataT
-        self.dataX = data_decompositor.data_decomposed_X
-        self.dataZ = data_decompositor.data_decomposed_Z
-        self.dataI = data_decompositor.dataI
+        self.dataT = data_source.dataT
+        self.dataX = data_source.dataX
+        self.dataZ = data_source.dataZ
+        self.dataI = data_source.dataI
+        self.current_to_process = self.dataI
 
-        self.data_to_process_X = self.dataX[ :, self.vect_num - 1]
-        self.data_to_process_Z = self.dataZ[ :, self.vect_num - 1]
 
-        # if self.type_to_process == 'X':
-            # self.data_to_process = self.dataX
-        # elif self.type_to_process == 'Z':
-            # self.data_to_process = self.dataZ
-        # else:
-            # return
+        if self.type_to_process == 'X':
+            self.data_to_process = self.dataX
+        elif self.type_to_process == 'Z':
+            self.data_to_process = self.dataZ
+        else:
+            return
 
-        self.data_to_process_X = self.window_adding(self.data_to_process_X)
-        self.data_to_process_Z = self.window_adding(self.data_to_process_Z)
-
-        # if self.bpm == "all":
-            # self.fftwT = np.fft.rfftfreq(self.data_len, 1.0/4)
-            # self.fftwT = self.fftwT[0:int(len(self.fftwT)/4)]
-            # self.fftw_to_process = np.abs(np.fft.rfft(self.data_to_process - np.mean(self.data_to_process))) / self.data_len
-            # self.fftw_to_process = self.fftw_to_process[0:int(len(self.fftw_to_process)/4)]
-
-        # else:
-            # self.fftwT = np.fft.rfftfreq(self.data_len, 1.0)
-            # self.fftw_to_process = np.abs(np.fft.rfft(self.data_to_process - np.mean(self.data_to_process))) / self.data_len
+        
+        self.data_to_process = self.data_to_process * self.window
         self.fftwT = np.fft.rfftfreq(self.data_len, 1.0)
-        self.fftw_to_process_X = self.fftw_creating(self.data_to_process_X)
-        self.fftw_to_process_Z = self.fftw_creating(self.data_to_process_Z)
+        self.fftw_to_process = np.abs(np.fft.rfft(self.data_to_process - np.mean(self.data_to_process))) / self.data_len
 
         if self.algType == 'None':
             self.frq_founded = 0.0
@@ -124,37 +108,32 @@ class DataProcessor(QObject):
             self.warningText = 'OK!'
 
         if self.algType == 'Peak':
-            self.frq_founded_X = self.on_peak_method(self.fftw_to_process_X)
-            self.frq_founded_Z = self.on_peak_method(self.fftw_to_process_Z)
+            self.frq_founded = self.on_peak_method()
 
         if self.algType == 'Gassior':
-            self.frq_founded_X = self.on_gassior_method(self.fftw_to_process_X)
-            self.frq_founded_Z = self.on_gassior_method(self.fftw_to_process_Z)
+            self.frq_founded = self.on_gassior_method()
 
         if self.algType == 'Naff':
-            self.frq_founded_X = self.on_naff_method(self.fftw_to_process_X, self.data_to_process_X)
-            self.frq_founded_Z = self.on_naff_method(self.fftw_to_process_Z, self.data_to_process_Z)
+            self.frq_founded = self.on_naff_method()
+
+        if self.type_to_process == 'X':
+            self.momentum = self.momentum_calc(self.dataX)
+        elif self.type_to_process == 'Z':
+            self.momentum = self.momentum_calc(self.dataZ)
+        else:
+            return
+
+        self.delta_I, self.t_zero = self.current_calc(self.current_to_process)
 
         self.data_processed.emit(self)
 
-    def window_adding(self, data):
-        """   """
-        data = data * self.window
-        return data
-
-    def fftw_creating(self, data):
-        """   """
-        fftw_data = None
-        fftw_data = np.abs(np.fft.rfft(data - np.mean(data))) / self.data_len
-        return fftw_data
-
-    def on_peak_method(self, data):
+    def on_peak_method(self):
         """   """
         left_ind = math.floor(self.data_len * self.left_bound)
         right_ind = math.ceil(self.data_len * self.right_bound)
 
         tmp_t = self.fftwT[left_ind: right_ind]
-        tmp_x = data[left_ind: right_ind]
+        tmp_x = self.fftw_to_process[left_ind: right_ind]
 
         ind = np.argmax(tmp_x)
 
@@ -164,24 +143,24 @@ class DataProcessor(QObject):
 
         return self.frq_founded
 
-    def on_gassior_method(self, data):
+    def on_gassior_method(self):
         """   """
         left_ind = math.floor(self.data_len * self.left_bound)
         right_ind = math.ceil(self.data_len * self.right_bound)
 
         tmp_t = self.fftwT[left_ind: right_ind]
-        tmp_x = self.data[left_ind: right_ind]
+        tmp_x = self.fftw_to_process[left_ind: right_ind]
 
         if len(tmp_t) <= 1:
             tmp_t = self.fftwT[left_ind - 1: right_ind + 1]
-            tmp_x = self.data[left_ind - 1: right_ind + 1]
+            tmp_x = self.fftw_to_process[left_ind - 1: right_ind + 1]
 
         ind0 = np.argmax(tmp_x)
         indl = ind0 - 1
         indr = ind0 + 1
 
         if ind0 == 0 or ind0 == len(tmp_t) - 1:
-            self.frq_founded = self.on_peak_method(data)
+            self.frq_founded = self.on_peak_method()
             self.warning = 1
             self.warningText = 'Borders!'
             print(self.warningText)
@@ -193,17 +172,17 @@ class DataProcessor(QObject):
 
         return self.frq_founded
 
-    def on_naff_method(self, data_fftw, data):
+    def on_naff_method(self):
         """   """
         left_ind = math.floor(self.data_len * self.left_bound)
         right_ind = math.ceil(self.data_len * self.right_bound)
 
-        tmp_x = data_fftw[left_ind: right_ind]
+        tmp_x = self.fftw_to_process[left_ind: right_ind]
         tmp_t = self.fftwT[left_ind: right_ind]
 
         if len(tmp_t) <= 1:
             tmp_t = self.fftwT[left_ind - 1: right_ind + 1]
-            tmp_x = self.data_fftw[left_ind - 1: right_ind + 1]
+            tmp_x = self.fftw_to_process[left_ind - 1: right_ind + 1]
 
         ind0 = np.argmax(tmp_x)
 
@@ -248,8 +227,8 @@ class DataProcessor(QObject):
                 conv_exp = np.exp(2 * np.pi * complex(0, 1) * self.dataT * omega)
                 falpha[it] = np.abs(np.sum(conv_exp * self.data_to_process))
             else:
-                conv_cos = np.sum(np.cos(2 * np.pi * self.dataT * omega) * data)
-                conv_sin = np.sum(np.sin(2 * np.pi * self.dataT * omega) * data)
+                conv_cos = np.sum(np.cos(2 * np.pi * self.dataT * omega) * self.data_to_process)
+                conv_sin = np.sum(np.sin(2 * np.pi * self.dataT * omega) * self.data_to_process)
                 falpha[it] = np.sqrt(conv_cos * conv_cos + conv_sin * conv_sin)
 
         self.alpha = alpha.copy()
@@ -259,3 +238,29 @@ class DataProcessor(QObject):
         self.frq_founded = self.alpha[ind_alpha]
 
         return self.frq_founded
+
+    def momentum_calc(self, Mas):
+        """   """
+        newMass = np.zeros(len(Mas) - 1)
+        for i in range (len(Mas) - 1):
+            if np.sin(2 * np.pi * self.frq_founded) == 0:
+                newMass[i] =0
+            else:
+                newMass[i] = (Mas[i+1] - Mas[i] * np.cos(2 * np.pi * self.frq_founded))/np.sin(2 * np.pi * self.frq_founded)
+
+        return newMass
+
+    def current_calc(self, current):
+        """   """
+        max_pos = 0
+        max_diff = 0
+        diff = np.zeros(len(current))
+        for i in range(len(current)-1):
+            diff[i] = current[i+1] - current[i]
+        max_pos = np.argmax(abs(diff))
+        print(max_pos)
+        max_diff = diff[max_pos]
+        return(max_diff, max_pos)
+        
+
+
