@@ -58,7 +58,7 @@ class BPMData(BPMTemplate):
                 self.harmonic_oscillations(phase, dataT, self.a2, self.w2, namp)) + \
                 [x for x in bnamp*(np.random.normal(self.mu, self.sigma, self.data_len))]
 
-        dataZ = np.exp(-0.5*self.k*dataT**2)*\
+        dataZ = 8 + np.exp(-0.5*self.k*dataT**2)*\
                 (self.harmonic_oscillations(phase, dataT, self.a0, self.w0, namp) + \
                 1.5*self.harmonic_oscillations(phase, dataT, self.a1, self.w1, namp) + \
                 3* self.harmonic_oscillations(phase, dataT, self.a2, self.w2, namp)) + \
