@@ -16,11 +16,11 @@ class BPMData(BPMTemplate):
         super(BPMData, self).__init__(bpm_name, parent)
 
         if bpm_name == "bpm01":
-            bpm_channel = 4
-        elif bpm_name == "bpm02":
             bpm_channel = 5
-        elif bpm_name == "bpm03":
+        elif bpm_name == "bpm02":
             bpm_channel = 6
+        elif bpm_name == "bpm03":
+            bpm_channel = 8
         elif bpm_name == "bpm04":
             bpm_channel = 7
         else:
@@ -40,6 +40,7 @@ class BPMData(BPMTemplate):
         self.bpmChan_istart = cda.IChan(bpm_istart_name)
 
         self.bpmChan_numpts.valueMeasured.connect(self._on_numpts_update)
+        print(self.bpmChan_numpts)
         self.bpmChan_istart.valueMeasured.connect(self._on_istart_update)
         self.bpmChan.valueMeasured.connect(self._on_signal_update)
 
@@ -50,6 +51,8 @@ class BPMData(BPMTemplate):
     def _on_numpts_update(self, chan):
         """   """
         self.num_pts = chan.val
+        print(chan.val)
+        #self.num_pts = 8186
         self.data_len = self.num_pts
 
         tmp = np.reshape(self.data, (4, self.num_pts))
@@ -64,6 +67,6 @@ class BPMData(BPMTemplate):
     def _on_istart_update(self, chan):
         """   """
         self.istart = chan.val
-        #print(self.bpm_name, ":", self.istart)
+        print(self.bpm_name, ":", self.istart)
 
 
