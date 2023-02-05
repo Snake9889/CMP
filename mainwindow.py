@@ -17,7 +17,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         ui_path = os.path.dirname(os.path.abspath(__file__))
-        self.ui = uic.loadUi(os.path.join(ui_path, 'MainWindow.ui'), self)
+        self.ui = uic.loadUi(os.path.join(ui_path, 'MainWindow_2.ui'), self)
 
         self.window_str = "None"
         self.bpm = bpm_name
@@ -70,13 +70,13 @@ class MainWindow(QMainWindow):
 
         self.plots_customization()
 
-        self.data_curve11 = self.ui.plotSignal.plot(pen='r', title='X_plot')
-        self.data_curve12 = self.ui.plotSignal.plot(pen='b', title='Z_plot')
+        self.data_curve11 = self.ui.plotSignal_x.plot(pen='r', title='X_plot')
+        self.data_curve12 = self.ui.plotSignal_Z.plot(pen='b', title='Z_plot')
         self.data_curve2 = self.ui.plotFX.plot(pen='r', title='Fourier Transform X_plot')
         self.data_curve3 = self.ui.plotFZ.plot(pen='b', title='Fourier Transform Z_plot')
         self.data_curve4 = self.ui.plotI.plot(pen='k', title='Current_plot')
-        self.data_curve51 = self.ui.plotPhase.scatterPlot(pen='k', title='X_phase', symbol='o', size=3, brush='r')
-        self.data_curve52 = self.ui.plotPhase.scatterPlot(pen='k', title='Z_phase', symbol='o', size=3, brush='b')
+        self.data_curve51 = self.ui.plotPhase_X.scatterPlot(pen='k', title='X_phase', symbol='o', size=3, brush='r')
+        self.data_curve52 = self.ui.plotPhase_Z.scatterPlot(pen='k', title='Z_phase', symbol='o', size=3, brush='b')
 
 
     @staticmethod
@@ -90,14 +90,20 @@ class MainWindow(QMainWindow):
         """   """
         label_str_x = "<span style=\"color:red; font-size:16px\">{}</span>"
         label_str_z = "<span style=\"color:blue;font-size:16px\">{}</span>"
+        label_str_i = "<span style=\"color:black;font-size:16px\">{}</span>"
 
-        plot = self.ui.plotSignal
+        #print(self.ui.tabWidget.indexOf(plotSignal_X))
+        plot = self.ui.tabWidget.setCurrentIndex(1).plotSignal_X
         self.customize_plot(plot)
-        self.customise_label(plot, pg.TextItem(), label_str_x.format("X-Z"))
+        self.customise_label(plot, pg.TextItem(), label_str_x.format("X"))
+
+        plot = self.ui.plotSignal_Z
+        self.customize_plot(plot)
+        self.customise_label(plot, pg.TextItem(), label_str_z.format("Z"))
 
         plot = self.ui.plotI
         self.customize_plot(plot)
-        self.customise_label(plot, pg.TextItem(), label_str_z.format("I"))
+        self.customise_label(plot, pg.TextItem(), label_str_i.format("I"))
 
         plot = self.ui.plotFX
         self.customize_plot(plot)
@@ -117,10 +123,15 @@ class MainWindow(QMainWindow):
         plot.addItem(self.FZ)
         self.FZ.sigRegionChangeFinished.connect(self.region_Z_changed)
 
-        plot = self.ui.plotPhase
+        plot = self.ui.plotPhase_X
         self.customize_plot(plot)
-        self.customise_label(plot, pg.TextItem(), label_str_x.format("Phase"))
-        self.plotPhase.setAspectLocked(True)
+        self.customise_label(plot, pg.TextItem(), label_str_x.format("Phase_X"))
+        self.plotPhase_X.setAspectLocked(True)
+
+        plot = self.ui.plotPhase_Z
+        self.customize_plot(plot)
+        self.customise_label(plot, pg.TextItem(), label_str_z.format("Phase_Z"))
+        self.plotPhase_Z.setAspectLocked(True)
 
     @staticmethod
     def customize_plot(plot):
