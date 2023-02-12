@@ -1,7 +1,7 @@
 # This Python file uses the following encoding: utf-8
 
 import os.path
-from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget, QLabel
 from PyQt5.QtCore import pyqtSignal, QRectF, Qt, QSettings, QSize, QPoint
 from PyQt5 import uic
 import pyqtgraph as pg
@@ -70,13 +70,13 @@ class MainWindow(QMainWindow):
 
         self.plots_customization()
 
-        self.data_curve11 = self.ui.plotSignal_x.plot(pen='r', title='X_plot')
-        self.data_curve12 = self.ui.plotSignal_Z.plot(pen='b', title='Z_plot')
-        self.data_curve2 = self.ui.plotFX.plot(pen='r', title='Fourier Transform X_plot')
-        self.data_curve3 = self.ui.plotFZ.plot(pen='b', title='Fourier Transform Z_plot')
+        self.data_curve11 = self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotSignal_X').plot(pen='r', title='X_plot')
+        self.data_curve12 = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotSignal_Z').plot(pen='b', title='Z_plot')
+        self.data_curve2 = self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plot_FX').plot(pen='r', title='Fourier Transform X_plot')
+        self.data_curve3 = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plot_FZ').plot(pen='b', title='Fourier Transform Z_plot')
         self.data_curve4 = self.ui.plotI.plot(pen='k', title='Current_plot')
-        self.data_curve51 = self.ui.plotPhase_X.scatterPlot(pen='k', title='X_phase', symbol='o', size=3, brush='r')
-        self.data_curve52 = self.ui.plotPhase_Z.scatterPlot(pen='k', title='Z_phase', symbol='o', size=3, brush='b')
+        self.data_curve51 = self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotPhase_X').scatterPlot(pen='k', title='X_phase', symbol='o', size=3, brush='r')
+        self.data_curve52 = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotPhase_Z').scatterPlot(pen='k', title='Z_phase', symbol='o', size=3, brush='b')
 
 
     @staticmethod
@@ -92,12 +92,12 @@ class MainWindow(QMainWindow):
         label_str_z = "<span style=\"color:blue;font-size:16px\">{}</span>"
         label_str_i = "<span style=\"color:black;font-size:16px\">{}</span>"
 
-        #print(self.ui.tabWidget.indexOf(plotSignal_X))
-        plot = self.ui.tabWidget.setCurrentIndex(1).plotSignal_X
+        print(self.ui.tabWidget.widget(0).children())
+        plot = self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotSignal_X')
         self.customize_plot(plot)
         self.customise_label(plot, pg.TextItem(), label_str_x.format("X"))
 
-        plot = self.ui.plotSignal_Z
+        plot = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotSignal_Z')
         self.customize_plot(plot)
         self.customise_label(plot, pg.TextItem(), label_str_z.format("Z"))
 
@@ -105,7 +105,7 @@ class MainWindow(QMainWindow):
         self.customize_plot(plot)
         self.customise_label(plot, pg.TextItem(), label_str_i.format("I"))
 
-        plot = self.ui.plotFX
+        plot = self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plot_FX')
         self.customize_plot(plot)
         self.customise_label(plot, pg.TextItem(), label_str_x.format("Ax"))
 
@@ -114,7 +114,7 @@ class MainWindow(QMainWindow):
         plot.addItem(self.FX)
         self.FX.sigRegionChangeFinished.connect(self.region_X_changed)
 
-        plot = self.ui.plotFZ
+        plot = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plot_FZ')
         self.customize_plot(plot)
         self.customise_label(plot, pg.TextItem(), label_str_z.format("Az"))
 
@@ -123,12 +123,12 @@ class MainWindow(QMainWindow):
         plot.addItem(self.FZ)
         self.FZ.sigRegionChangeFinished.connect(self.region_Z_changed)
 
-        plot = self.ui.plotPhase_X
+        plot = self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotPhase_X')
         self.customize_plot(plot)
         self.customise_label(plot, pg.TextItem(), label_str_x.format("Phase_X"))
         self.plotPhase_X.setAspectLocked(True)
 
-        plot = self.ui.plotPhase_Z
+        plot = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotPhase_Z')
         self.customize_plot(plot)
         self.customise_label(plot, pg.TextItem(), label_str_z.format("Phase_Z"))
         self.plotPhase_Z.setAspectLocked(True)
@@ -147,9 +147,9 @@ class MainWindow(QMainWindow):
         """   """
         scale = control_widget.scale
         if control_widget.str_id == "Data_X":
-            self.plot_mode(self.ui.plotFX, scale)
+            self.plot_mode(self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plot_FX'), scale)
         elif control_widget.str_id == "Data_Z":
-            self.plot_mode(self.ui.plotFZ, scale)
+            self.plot_mode(self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plot_FZ'), scale)
         else:
             print("Error in control_widget!")
 
@@ -193,7 +193,8 @@ class MainWindow(QMainWindow):
         """   """
         self.data_curve11.setData(data_source.dataT, data_source.dataX)
         self.data_curve12.setData(data_source.dataT, data_source.dataZ)
-        self.signal_rect = self.ui.plotSignal.viewRange()
+        self.signal_X_rect = self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotSignal_X').viewRange()
+        self.signal_Z_rect = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotSignal_Z').viewRange()
 
     def on_current_ready(self, data_source):
         """   """
@@ -203,21 +204,21 @@ class MainWindow(QMainWindow):
     def on_data_FX_ready(self, data_processor):
         """   """
         self.data_curve2.setData(data_processor.fftwT, data_processor.fftw_to_process)
-        self.fx_rect = self.ui.plotFX.viewRange()
+        self.fx_rect = self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plot_FX').viewRange()
 
     def on_data_FZ_ready(self, data_processor):
         """   """
         self.data_curve3.setData(data_processor.fftwT, data_processor.fftw_to_process)
-        self.fz_rect = self.ui.plotFZ.viewRange()
+        self.fz_rect = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plot_FZ').viewRange()
 
     def on_freq_status_X(self, data_processor):
         """   """
         if data_processor.warning == 0:
-            self.ui.frq_x.setText('{:.5f}'.format(data_processor.frq_founded))
+            self.ui.tabWidget.widget(0).findChild(QLabel, 'nu_x_label').setText('{:.5f}'.format(data_processor.frq_founded))
         elif data_processor.warning == 1:
-            self.ui.frq_x.setText(data_processor.warningText)
+            self.ui.tabWidget.widget(0).findChild(QLabel, 'nu_x_label').setText(data_processor.warningText)
         else:
-            self.ui.frq_x.setText('Unexpected value!')
+            self.ui.tabWidget.widget(0).findChild(QLabel, 'nu_x_label').setText('Unexpected value!')
 
     def on_freq_status_Z(self, data_processor):
         """   """
@@ -232,7 +233,9 @@ class MainWindow(QMainWindow):
         """   """
         self.data_curve51.setData(data_processor.dataX[0:len(data_processor.momentum)], data_processor.momentum)
         self.data_curve52.setData(data_processor.dataZ[0:len(data_processor.momentum)], data_processor.momentum)
-        self.phase_rect = self.ui.plotPhase.viewRange()
+        self.phase_x_rect = self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotPhase_X').viewRange()
+        self.phase_x_rect = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotPhase_Z').viewRange()
+
 
     def on_current_status(self, data_processor):
         """   """
@@ -252,11 +255,13 @@ class MainWindow(QMainWindow):
         settings = QSettings()
         settings.beginGroup(self.bpm)
         settings.beginGroup("Plots")
-        settings.setValue("signal_zoom", self.signal_rect)
+        settings.setValue("signal_x_zoom", self.signal_x_rect)
+        settings.setValue("signal_z_zoom", self.signal_z_rect)
         settings.setValue("current_zoom", self.current_rect)
         settings.setValue("fx_zoom", self.fx_rect)
         settings.setValue("fz_zoom", self.fz_rect)
-        settings.setValue("phase_zoom", self.phase_rect)
+        settings.setValue("phase_x_zoom", self.phase_x_rect)
+        settings.setValue("phase_z_zoom", self.phase_z_rect)
         settings.setValue('size', self.size())
         settings.setValue('pos', self.pos())
         settings.endGroup()
@@ -270,18 +275,22 @@ class MainWindow(QMainWindow):
         settings = QSettings()
         settings.beginGroup(self.bpm)
         settings.beginGroup("Plots")
-        self.signal_rect = settings.value("signal_zoom", rect_def)
+        self.signal_x_rect = settings.value("signal_x_zoom", rect_def)
+        self.signal_z_rect = settings.value("signal_z_zoom", rect_def)
         self.current_rect = settings.value("current_zoom", rect_def)
         self.fx_rect = settings.value("fx_zoom", rect_def)
         self.fz_rect = settings.value("fz_zoom", rect_def)
-        self.phase_rect = settings.value("phase_zoom", rect_def_phase)
+        self.phase_x_rect = settings.value("phase_x_zoom", rect_def_phase)
+        self.phase_z_rect = settings.value("phase_z_zoom", rect_def_phase)
         self.resize(settings.value('size', QSize(500, 500)))
         self.move(settings.value('pos', QPoint(60, 60)))
         settings.endGroup()
         settings.endGroup()
 
-        self.ui.plotSignal.setRange(xRange=self.signal_rect[0], yRange=self.signal_rect[1])
-        self.ui.plotPhase.setRange(xRange=self.phase_rect[0], yRange=self.phase_rect[1])
-        self.ui.plotFX.setRange(xRange=self.fx_rect[0], yRange=self.fx_rect[1])
-        self.ui.plotFZ.setRange(xRange=self.fz_rect[0], yRange=self.fz_rect[1])
+        self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotSignal_X').setRange(xRange=self.signal_x_rect[0], yRange=self.signal_x_rect[1])
+        self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotSignal_Z').setRange(xRange=self.signal_z_rect[0], yRange=self.signal_z_rect[1])
+        self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotPhase_X').setRange(xRange=self.phase_x_rect[0], yRange=self.phase_x_rect[1])
+        self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotPhase_Z').setRange(xRange=self.phase_z_rect[0], yRange=self.phase_z_rect[1])
+        self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plot_FX').setRange(xRange=self.fx_rect[0], yRange=self.fx_rect[1])
+        self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plot_FZ').setRange(xRange=self.fz_rect[0], yRange=self.fz_rect[1])
 
