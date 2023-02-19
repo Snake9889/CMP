@@ -193,8 +193,8 @@ class MainWindow(QMainWindow):
         """   """
         self.data_curve11.setData(data_source.dataT, data_source.dataX)
         self.data_curve12.setData(data_source.dataT, data_source.dataZ)
-        self.signal_X_rect = self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotSignal_X').viewRange()
-        self.signal_Z_rect = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotSignal_Z').viewRange()
+        self.signal_x_rect = self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotSignal_X').viewRange()
+        self.signal_z_rect = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotSignal_Z').viewRange()
 
     def on_current_ready(self, data_source):
         """   """
@@ -214,27 +214,27 @@ class MainWindow(QMainWindow):
     def on_freq_status_X(self, data_processor):
         """   """
         if data_processor.warning == 0:
-            self.ui.tabWidget.widget(0).findChild(QLabel, 'nu_x_label').setText('{:.5f}'.format(data_processor.frq_founded))
+            self.ui.tabWidget.widget(0).findChild(QLabel, 'frq_x').setText('{:.5f}'.format(data_processor.frq_founded))
         elif data_processor.warning == 1:
-            self.ui.tabWidget.widget(0).findChild(QLabel, 'nu_x_label').setText(data_processor.warningText)
+            self.ui.tabWidget.widget(0).findChild(QLabel, 'frq_x').setText(data_processor.warningText)
         else:
-            self.ui.tabWidget.widget(0).findChild(QLabel, 'nu_x_label').setText('Unexpected value!')
+            self.ui.tabWidget.widget(0).findChild(QLabel, 'frq_x').setText('Unexpected value!')
 
     def on_freq_status_Z(self, data_processor):
         """   """
         if data_processor.warning == 0:
-            self.ui.frq_z.setText('{:.5f}'.format(data_processor.frq_founded))
+            self.ui.tabWidget.widget(1).findChild(QLabel, 'frq_z').setText('{:.5f}'.format(data_processor.frq_founded))
         elif data_processor.warning == 1:
-            self.ui.frq_z.setText(data_processor.warningText)
+            self.ui.tabWidget.widget(1).findChild(QLabel, 'frq_z').setText(data_processor.warningText)
         else:
-            self.ui.frq_z.setText('Unexpected value!')
+            self.ui.tabWidget.widget(1).findChild(QLabel, 'frq_z').setText('Unexpected value!')
 
     def on_phase_status(self, data_processor):
         """   """
         self.data_curve51.setData(data_processor.dataX[0:len(data_processor.momentum)], data_processor.momentum)
         self.data_curve52.setData(data_processor.dataZ[0:len(data_processor.momentum)], data_processor.momentum)
         self.phase_x_rect = self.ui.tabWidget.widget(0).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotPhase_X').viewRange()
-        self.phase_x_rect = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotPhase_Z').viewRange()
+        self.phase_z_rect = self.ui.tabWidget.widget(1).findChild(pg.widgets.PlotWidget.PlotWidget, 'plotPhase_Z').viewRange()
 
 
     def on_current_status(self, data_processor):
