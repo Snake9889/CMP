@@ -6,7 +6,6 @@ from PyQt5.QtCore import pyqtSignal, QRectF, Qt, QSettings, QSize, QPoint
 from PyQt5 import uic
 import pyqtgraph as pg
 from helpwidget import HelpWidget
-from statuswidget import StatusWidget
 
 
 class MainWindow(QMainWindow):
@@ -17,7 +16,7 @@ class MainWindow(QMainWindow):
         super(MainWindow, self).__init__()
 
         ui_path = os.path.dirname(os.path.abspath(__file__))
-        self.ui = uic.loadUi(os.path.join(ui_path, 'MainWindow_2.ui'), self)
+        self.ui = uic.loadUi(os.path.join(ui_path, 'MainWindow.ui'), self)
 
         self.window_str = "None"
         self.bpm = bpm_name

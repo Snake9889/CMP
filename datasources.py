@@ -3,7 +3,6 @@ from PyQt5.QtCore import pyqtSignal, QObject, QTimer, QSettings
 import numpy as np
 import random
 from BPM_template import BPMTemplate
-from statuswidget import StatusWidget
 
 
 class BPMData(BPMTemplate):
@@ -11,8 +10,6 @@ class BPMData(BPMTemplate):
 
     def __init__(self, bpm_name='', parent=None):
         super(BPMData, self).__init__('model', parent)
-
-        self.statusWidget = StatusWidget()
 
         self.data_len = 8000
 
@@ -58,7 +55,7 @@ class BPMData(BPMTemplate):
                 self.harmonic_oscillations(phase, dataT, self.a2, self.w2, namp)) + \
                 [x for x in bnamp*(np.random.normal(self.mu, self.sigma, self.data_len))]
 
-        dataZ = 8 + np.exp(-0.5*self.k*dataT**2)*\
+        dataZ = np.exp(-0.5*self.k*dataT**2)*\
                 (self.harmonic_oscillations(phase, dataT, self.a0, self.w0, namp) + \
                 1.5*self.harmonic_oscillations(phase, dataT, self.a1, self.w1, namp) + \
                 3* self.harmonic_oscillations(phase, dataT, self.a2, self.w2, namp)) + \
@@ -95,8 +92,6 @@ class BPMData(BPMTemplate):
         settings.beginGroup(self.bpm)
         self.particles = settings.value("particles", "e-")
         settings.endGroup()
-
-        #self.statusWidget.particles_type.setCurrentText(self.particles)
 
     def save_settings(self):
         """   """

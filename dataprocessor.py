@@ -97,7 +97,7 @@ class DataProcessor(QObject):
         else:
             return
 
-
+        
         self.data_to_process = self.data_to_process * self.window
         self.fftwT = np.fft.rfftfreq(self.data_len, 1.0)
         self.fftw_to_process = np.abs(np.fft.rfft(self.data_to_process - np.mean(self.data_to_process))) / self.data_len
@@ -258,8 +258,9 @@ class DataProcessor(QObject):
         for i in range(len(current)-1):
             diff[i] = current[i+1] - current[i]
         max_pos = np.argmax(abs(diff))
+        print(max_pos)
         max_diff = diff[max_pos]
         return(max_diff, max_pos)
-
+        
 
 
