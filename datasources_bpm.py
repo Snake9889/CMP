@@ -15,16 +15,11 @@ class BPMData(BPMTemplate):
     def __init__(self, bpm_name='', parent=None):
         super(BPMData, self).__init__(bpm_name, parent)
 
-        if bpm_name == "bpm01":
-            bpm_channel = 5
-        elif bpm_name == "bpm02":
-            bpm_channel = 6
-        elif bpm_name == "bpm03":
-            bpm_channel = 8
-        elif bpm_name == "bpm04":
-            bpm_channel = 7
-        else:
-            bpm_channel = -1
+        if bpm_name   == "bpm05": bpm_channel = 4
+        elif bpm_name == "bpm06": bpm_channel = 5
+        elif bpm_name == "bpm08": bpm_channel = 6
+        elif bpm_name == "bpm11": bpm_channel = 7
+        else:                     bpm_channel = 4
 
         #self.bpm_name = bpm_name
 
