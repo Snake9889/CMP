@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>747</width>
-    <height>779</height>
+    <height>819</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -63,7 +63,7 @@
          <string>BetaX</string>
         </property>
         <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0);</string>
+         <string notr="true">color: rgb(0, 0, 0);</string>
         </property>
         <property name="text">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;t&lt;span style=&quot; vertical-align:sub;&quot;&gt;0&lt;/span&gt;=&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -87,7 +87,7 @@
          <string>BetaX-tune</string>
         </property>
         <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0);</string>
+         <string notr="true">color: rgb(0, 0, 0);</string>
         </property>
         <property name="text">
          <string>0.00000</string>
@@ -128,7 +128,7 @@
          <string>BetaZ</string>
         </property>
         <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0);</string>
+         <string notr="true">color: rgb(0, 0, 0);</string>
         </property>
         <property name="text">
          <string>delta I=</string>
@@ -152,7 +152,7 @@
          <string>BetaZ-tune</string>
         </property>
         <property name="styleSheet">
-         <string notr="true">color: rgb(0, 255, 0);</string>
+         <string notr="true">color: rgb(0, 0, 0);</string>
         </property>
         <property name="text">
          <string>0.00000</string>
@@ -258,7 +258,7 @@
       <property name="maximumSize">
        <size>
         <width>16777215</width>
-        <height>450</height>
+        <height>200</height>
        </size>
       </property>
       <property name="toolTip">
@@ -306,7 +306,7 @@
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>175</height>
+                <height>450</height>
                </size>
               </property>
               <property name="toolTip">
@@ -346,7 +346,7 @@
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>450</height>
+                <height>750</height>
                </size>
               </property>
               <property name="toolTip">
@@ -464,7 +464,7 @@
             <property name="maximumSize">
              <size>
               <width>16777215</width>
-              <height>400</height>
+              <height>450</height>
              </size>
             </property>
             <property name="toolTip">
@@ -687,7 +687,7 @@
      <x>0</x>
      <y>0</y>
      <width>747</width>
-     <height>22</height>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuHelp">
