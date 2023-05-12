@@ -10,7 +10,7 @@ class SettingsControl(QObject):
     read_data = pyqtSignal(QObject)
 
     def __init__(self, parent=None):
-        super(SettingsControl, self).__init__(parent)
+        super().__init__(parent)
 
         self.obj_list = []
 

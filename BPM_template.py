@@ -10,7 +10,7 @@ class BPMTemplate(QObject):
     data_ready = pyqtSignal(object)
 
     def __init__(self, bpm_name='', parent=None):
-        super(BPMTemplate, self).__init__(parent)
+        super().__init__(parent)
 
         self.bpm_name = bpm_name
         self.num_pts = 1024

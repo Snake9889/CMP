@@ -12,8 +12,8 @@ class MainWindow(QMainWindow):
     """   """
     region_changed = pyqtSignal(object)
 
-    def __init__(self, data_source, data_proc_X, data_proc_Z, settings_control, bpm_name):
-        super(MainWindow, self).__init__()
+    def __init__(self, data_source, data_proc_X, data_proc_Z, settings_control, bpm_name, parent=None):
+        super().__init__(parent)
 
         ui_path = os.path.dirname(os.path.abspath(__file__))
         self.ui = uic.loadUi(os.path.join(ui_path, 'MainWindow.ui'), self)

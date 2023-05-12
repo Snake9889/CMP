@@ -6,7 +6,7 @@ import argparse
 class TerminalParser(QObject):
     """   """
     def __init__(self, parent=None):
-        super(TerminalParser, self).__init__(parent)
+        super().__init__(parent)
 
         self.parser = argparse.ArgumentParser(description='Startup settings for software')
 

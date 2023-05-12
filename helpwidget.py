@@ -7,8 +7,8 @@ import os.path
 
 class HelpWidget(QWidget):
     """   """
-    def __init__(self, file_name):
-        super().__init__()
+    def __init__(self, file_name, parent=None):
+        super().__init__(parent)
         self.label = QLabel(self)
 
         icon_path = os.path.dirname(os.path.abspath(__file__))

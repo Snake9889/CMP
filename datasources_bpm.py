@@ -13,7 +13,7 @@ class BPMData(BPMTemplate):
     #bpm_channel_template = "v2cx::hemera:4."
 
     def __init__(self, bpm_name='', parent=None):
-        super(BPMData, self).__init__(bpm_name, parent)
+        super().__init__(bpm_name, parent)
 
         if bpm_name   == "bpm05": bpm_channel = 4
         elif bpm_name == "bpm06": bpm_channel = 5

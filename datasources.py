@@ -9,7 +9,7 @@ class BPMData(BPMTemplate):
     """   """
 
     def __init__(self, bpm_name='', parent=None):
-        super(BPMData, self).__init__('model', parent)
+        super().__init__('model', parent)
 
         self.data_len = 8000
 
