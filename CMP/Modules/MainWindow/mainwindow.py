@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QWidget, QLa
 from PyQt5.QtCore import pyqtSignal, QRectF, Qt, QSettings, QSize, QPoint
 from PyQt5 import uic
 import pyqtgraph as pg
-from helpwidget import HelpWidget
+from CMP.Modules.MainWindow.helpwidget import HelpWidget
 
 
 class MainWindow(QMainWindow):

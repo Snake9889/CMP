@@ -2,7 +2,7 @@
 from PyQt5.QtCore import pyqtSignal, QObject, QTimer, QSettings
 import numpy as np
 import random
-from BPM_template import BPMTemplate
+from CMP.Modules.DataSource.BPM_template import BPMTemplate
 
 
 class BPMData(BPMTemplate):

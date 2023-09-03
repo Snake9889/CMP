@@ -3,10 +3,10 @@
 from PyQt5.QtCore import QCoreApplication, QSettings, QSize
 from PyQt5.QtGui import QIcon
 import signal
-from mainwindow import *
-from dataprocessor import DataProcessor
-from settingscontrol import SettingsControl
-from command_parser import TerminalParser
+from CMP.Modules.MainWindow.mainwindow import *
+from CMP.Modules.dataprocessor import DataProcessor
+from CMP.Modules.settingscontrol import SettingsControl
+from CMP.Modules.command_parser import TerminalParser
 
 pg.setConfigOption('background', 'w')
 pg.setConfigOption('foreground', 'k')
@@ -28,19 +28,15 @@ if __name__ == "__main__":
 
     argument_parser = TerminalParser()
     bpm_name_parsed = argument_parser.bpm_name_parsed
-    
+
     data_source = None
 
     if bpm_name_parsed == "model":
-        from datasources import BPMData
+        from CMP.Modules.DataSource.datasources import BPMData
         data_source = BPMData()
 
-    elif bpm_name_parsed == "all":
-        from datasources_all import BPMDataAll
-        data_source = BPMDataAll()
-
     else:
-        from datasources_bpm import BPMData
+        from CMP.Modules.DataSource.datasources_bpm import BPMData
         data_source = BPMData(bpm_name=bpm_name_parsed)
 
     if data_source is None:

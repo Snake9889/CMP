@@ -3,7 +3,7 @@
 from PyQt5.QtCore import pyqtSignal, Qt, QObject, QTimer
 import numpy as np
 import math
-from command_parser import TerminalParser
+from CMP.Modules.command_parser import TerminalParser
 
 
 class DataProcessor(QObject):
@@ -97,7 +97,7 @@ class DataProcessor(QObject):
         else:
             return
 
-        
+
         self.data_to_process = self.data_to_process * self.window
         self.fftwT = np.fft.rfftfreq(self.data_len, 1.0)
         self.fftw_to_process = np.abs(np.fft.rfft(self.data_to_process - np.mean(self.data_to_process))) / self.data_len
@@ -261,6 +261,6 @@ class DataProcessor(QObject):
         print(max_pos)
         max_diff = diff[max_pos]
         return(max_diff, max_pos)
-        
+
 
 

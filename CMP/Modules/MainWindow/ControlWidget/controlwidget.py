@@ -3,7 +3,7 @@
 from PyQt5.QtCore import pyqtSignal, Qt, QSettings
 from PyQt5.QtWidgets import QWidget
 from PyQt5 import uic
-from command_parser import TerminalParser
+from CMP.Modules.command_parser import TerminalParser
 import os.path
 
 
