@@ -1,2 +1,2 @@
 # CMP
-# BINP programm for measuring of current.
+# Programm for measuring of current.
